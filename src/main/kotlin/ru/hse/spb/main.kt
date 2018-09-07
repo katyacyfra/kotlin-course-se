@@ -7,46 +7,47 @@ package ru.hse.spb
 import java.util.Scanner
 
 class TagCounter(
-        private val text: CharArray,
-        private val len: Int
+        private val text: CharArray
 ) {
-    private var result = mutableListOf<Int>()
-    private var currentPos: Int = 0
+    private val result = mutableListOf<Int>()
+    private var currentPosition: Int = 0
+    private val length: Int = text.size
+    private var answer = ""
 
     private fun readTag(): String? {
-        val result = mutableListOf<Char>()
-        while (currentPos < len && text[currentPos] != '>') {
-            result.add(text[currentPos])
-            currentPos = currentPos + 1
+        val result = StringBuilder()
+        while (currentPosition < length && text[currentPosition] != '>') {
+            result.append(text[currentPosition])
+            currentPosition++
         }
-        if (currentPos == len) {
+        if (currentPosition == length) {
             return null
         }
-        result.add(text[currentPos])
-        currentPos = currentPos + 1
-        return result.joinToString("")
+        result.append(text[currentPosition])
+        currentPosition++
+        return result.toString()
 
     }
 
-    fun readTable() {
+    private fun readTable() {
         var counter: Int = 0
         var currentTag = readTag()
         while (currentTag != "</table>" && currentTag != null) {
             if (currentTag == "<tr>") {
-                counter = counter + readTr()
+                counter += countCellsInRow()
             }
             currentTag = readTag()
         }
         result.add(counter)
     }
 
-    private fun readTr(): Int {
+    private fun countCellsInRow(): Int {
         var counter: Int = 0
         var currentTag = readTag()
         while (currentTag != "</tr>" && currentTag != null) {
             if (currentTag == "<td>") {
                 readTd()
-                counter = counter + 1
+                counter++
             }
             currentTag = readTag()
         }
@@ -54,27 +55,36 @@ class TagCounter(
     }
 
     private fun readTd() {
-        var currentTag = readTag()
-        if (currentTag == "<table>") {
+        if (readTag() == "<table>") {
             readTable()
         }
     }
 
     fun output(): String {
-        result.sort()
-        return (result.joinToString(" "))
+        return answer
     }
 
+    private fun clear() {
+        currentPosition = 0
+        result.clear()
+    }
+
+    fun run() {
+        readTable()
+        result.sort()
+        answer = result.joinToString(" ")
+        clear()
+    }
 }
 
 fun main(args: Array<String>) {
     val input = Scanner(System.`in`)
-    val lines = mutableListOf<String>()
+    val lines = StringBuilder()
     while (input.hasNextLine()) {
-        lines.add(input.nextLine());
+        lines.append(input.nextLine());
     }
-    val text = lines.joinToString("").toCharArray()
-    val solution = TagCounter(text, text.size)
-    solution.readTable()
+    val text = lines.toString().toCharArray()
+    val solution = TagCounter(text)
+    solution.run()
     println(solution.output())
 }

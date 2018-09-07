@@ -7,8 +7,11 @@ class TestSource {
     @Test
     fun testOne() {
         val text = "<table><tr><td></td></tr></table>".toCharArray()
-        val solution = TagCounter(text, text.size)
-        solution.readTable()
+        val solution = TagCounter(text)
+        solution.run()
+        assertEquals("1", solution.output())
+        // testing second usage of run()
+        solution.run()
         assertEquals("1", solution.output())
     }
 
@@ -25,8 +28,8 @@ class TestSource {
                 "</tr>" +
                 "</table>"
         val chars = text.toCharArray()
-        val solution = TagCounter(chars, chars.size)
-        solution.readTable()
+        val solution = TagCounter(chars)
+        solution.run()
         assertEquals("1 4", solution.output())
     }
 
@@ -41,8 +44,8 @@ class TestSource {
                 "</td></tr></table>" +
                 "</td></tr></table>"
         val chars = text.toCharArray()
-        val solution = TagCounter(chars, chars.size)
-        solution.readTable()
+        val solution = TagCounter(chars)
+        solution.run()
         assertEquals("1 1 1 3", solution.output())
     }
 }
