@@ -19,7 +19,7 @@ fun interpret(source: String) {
     val block = parser.block()
 
     val errors = listener.getSyntaxErrors()
-    if (errors.size == 0) {
+    if (errors.isEmpty()) {
         val mainBlock = nodeConverter(block)
         Evaluator(mainBlock).runEvaluation()
     }
@@ -34,8 +34,7 @@ fun interpret(source: String) {
 
 
 fun main(args: Array<String>) {
-    val inputStream: InputStream = File(args[0]).inputStream()
-    val source = inputStream.bufferedReader().use { it.readText() }
+    val source = File(args[0]).readText()
     interpret(source)
 
 }

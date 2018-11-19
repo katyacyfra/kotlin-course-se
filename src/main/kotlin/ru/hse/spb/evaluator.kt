@@ -3,28 +3,19 @@ package ru.hse.spb
 import java.security.InvalidParameterException
 
 
-class Evaluator constructor(block: Block,
-                            scope: MutableMap<String, Int> = mutableMapOf(),
-                            functionMap: MutableMap<String, Block> = mutableMapOf(),
-                            functionParameters: MutableMap<String, MutableList<Identifier>> = mutableMapOf()) {
+class Evaluator constructor(private val mainBlock: Block,
+                            private val blockScope: MutableMap<String, Int> = mutableMapOf(),
+                            private val funcMap: MutableMap<String, Block> = mutableMapOf(),
+                            private val funcParam: MutableMap<String, List<Identifier>> = mutableMapOf()) {
 
-    private val mainBlock: Block = block
     private var result: Int? = null
-    private var blockScope: MutableMap<String, Int> = scope
-    private val funcMap = functionMap
-    private val funcParam = functionParameters
-
 
     fun runEvaluation() {
         evaluate(mainBlock)
     }
 
     private fun boolToInt(b: Boolean): Int {
-        if (b) {
-            return 1
-        } else {
-            return 0
-        }
+        return if (b) 1 else 0
     }
 
 
@@ -33,13 +24,7 @@ class Evaluator constructor(block: Block,
     }
 
     private fun getVarValue(varname: String): Int {
-        val value = blockScope.get(varname)
-        if (value != null) {
-            return value
-        } else {
-            throw NoSuchElementException("Unknown variable $varname")
-        }
-
+        return blockScope[varname] ?: throw NoSuchElementException("Unknown variable $varname")
     }
 
     private fun evaluate(value: Block) {
@@ -73,7 +58,7 @@ class Evaluator constructor(block: Block,
 
     private fun evaluate(node: Assignment) {
         val varname = evaluate(node.ident)
-        if (blockScope.containsKey(varname)) {
+        if (varname in blockScope) {
             blockScope.put(varname, evaluate(node.expr))
         } else {
             throw NoSuchElementException("Unknown variable $varname")
@@ -151,7 +136,7 @@ class Evaluator constructor(block: Block,
         val fname = evaluate(node.ident)
         val code = funcMap.get(fname)
         val args = node.arguments
-        if (fname.equals("println")) {
+        if (fname == "println") {
             for (a in args) {
                 when (a) {
                     is Identifier -> println(getVarValue(evaluate(a)))
