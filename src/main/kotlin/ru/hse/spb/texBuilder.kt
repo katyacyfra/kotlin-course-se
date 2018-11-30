@@ -49,12 +49,7 @@ abstract class OneCommand(val name: String, private val argument: String, vararg
     }
 
     fun renderParams(vararg parameters: String): String {
-        val paramsList = parameters.toList()
-        var result = ""
-        if (!paramsList.isEmpty()) {
-            result = paramsList.joinToString(separator = ",", prefix = "[", postfix = "]")
-        }
-        return result
+        return if (parameters.isEmpty()) "" else parameters.joinToString(separator = ",", prefix = "[", postfix = "]")
 
     }
 
@@ -66,7 +61,7 @@ abstract class OneCommand(val name: String, private val argument: String, vararg
 
 @TexCommandMarker
 abstract class Block(name: String, vararg params: String) : OneCommand(name, "", *params) {
-    val children = arrayListOf<Element>()
+    protected val children = arrayListOf<Element>()
 
     override fun render(builder: Output, indent: String) {
         builder.append("$indent\\begin{$name}${renderParams(*parameters)}\n")
@@ -76,7 +71,7 @@ abstract class Block(name: String, vararg params: String) : OneCommand(name, "",
 
     protected fun <T : Element> initTag(tag: T, init: T.() -> Unit): T {
         tag.init()
-        children.add(tag)
+        children += tag
         return tag
     }
 
@@ -87,7 +82,7 @@ abstract class Block(name: String, vararg params: String) : OneCommand(name, "",
     }
 
     operator fun String.unaryPlus() {
-        children.add(TextElement(this))
+        children += TextElement(this)
     }
 
     fun frame(frameTitle: String, vararg params: String, init: Frame.() -> Unit) = initTag(Frame(frameTitle, *params), init)
@@ -126,9 +121,6 @@ class Document(vararg params: String) : Block("document", *params) {
     }
 
     fun usepackage(argument: String, vararg params: String) = header.add(UsePackage(argument, *params))
-
-
-
 }
 
 
@@ -178,16 +170,5 @@ class Alignment(type: AlignmentValue) : Block(type.value)
 class CustomTag(name: String, vararg params: String) : Block(name, *params)
 
 fun document(init: Document.() -> Unit): Document {
-    val tex = Document()
-    tex.init()
-    return tex
+    return Document().apply(init)
 }
-
-
-
-
-
-
-
-
-
